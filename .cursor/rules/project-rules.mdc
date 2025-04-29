@@ -1,0 +1,72 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+ dkプロジェクトルール: Google ADK Python エージェント
+
+## 目的
+
+`google/adk-python` ライブラリを使用して仮想エージェントシステムを作成し、GoogleのADK（Agent Development Kit）を学習する。システムはローカルで実行され、親エージェントが3つの子エージェント機能（足し算、引き算、掛け算）を調整する構成とする。
+
+## アーキテクチャ
+
+```mermaid
+graph TD
+    User[ユーザー] --> ParentAgent(親エージェント - main_agent.py);
+    ParentAgent -- 足し算リクエスト --> AdderAgent(adder_agent.py: add());
+    ParentAgent -- 引き算リクエスト --> SubtractorAgent(subtractor_agent.py: subtract());
+    ParentAgent -- 掛け算リクエスト --> MultiplierAgent(multiplier_agent.py: multiply());
+    AdderAgent -- 結果 --> ParentAgent;
+    SubtractorAgent -- 結果 --> ParentAgent;
+    MultiplierAgent -- 結果 --> ParentAgent;
+    ParentAgent -- 最終結果 --> User;
+```
+
+*   **親エージェント (`main_agent.py`):**
+    *   `adk-python` の `Agent` クラスを使用する。
+    *   ユーザーからの自然言語入力（例：「5たす3」、「10ひく2」、「4かける6」）を処理する。
+    *   `IntentHandler` を使用して、操作の種類（足し算、引き算、掛け算）と数値を抽出する。
+    *   対応する子エージェントモジュール (`adder_agent.py`, `subtractor_agent.py`, `multiplier_agent.py`) 内の関数を呼び出す。
+    *   結果を整形してユーザーに返す。
+*   **子エージェントロジック (個別ファイル):**
+    *   親エージェントから呼び出される標準的なPython関数として、各計算ごとにファイルを分割して実装する。
+    *   `adder_agent.py`: `add(a, b)` 関数で足し算を実行する。
+    *   `subtractor_agent.py`: `subtract(a, b)` 関数で引き算を実行する。
+    *   `multiplier_agent.py`: `multiply(a, b)` 関数で掛け算を実行する。
+
+## 実装計画
+
+1.  **プロジェクト設定:**
+    *   プロジェクトディレクトリ (`adk_calculator_agent`) を作成する。
+    *   Python仮想環境を `uv` を使用して設定する (`.venv` ディレクトリ)。ルートディレクトリの `activate_venv.sh` スクリプトを参照すること。
+    *   `adk-python` ライブラリをインストールする: `uv pip install git+https://github.com/google/adk-python.git`
+2.  **子エージェントロジック実装 (個別ファイル):**
+    *   `adder_agent.py` に `add` 関数を定義する。
+    *   `subtractor_agent.py` に `subtract` 関数を定義する。
+    *   `multiplier_agent.py` に `multiply` 関数を定義する。
+3.  **親エージェント実装 (`main_agent.py`):**
+    *   `adk`, `adder_agent`, `subtractor_agent`, `multiplier_agent` をインポートする。
+    *   `Agent` インスタンスを作成する。
+    *   足し算、引き算、掛け算に対応する `IntentHandler` クラスを定義する。
+        *   ユーザー入力から数値を抽出するロジックを実装する。
+        *   対応する子エージェントモジュールの関数を呼び出す。
+        *   応答メッセージを生成する。
+    *   ハンドラーを `Agent` に登録する。
+    *   `adk.ConsoleChannel` （または類似のもの）を使用して、エージェントをコンソール経由でローカル実行する。
+4.  **テスト:**
+    *   仮想環境を有効化した後、`python main_agent.py` を実行する。
+    *   様々な入力（例：「5たす3は？」、「10ひく2を計算して」、「4と6を掛けて」）でテストし、正しい操作と結果を確認する。
+
+## 開発言語
+
+*   Python 3.x
+
+## 主要ライブラリ
+
+*   `google/adk-python` (https://github.com/google/adk-python)
+
+## コーディング規約
+
+*   プロジェクトルール、およびソースコード内のコメントはすべて日本語で記述すること。
+*   仮想環境の管理には `uv` を使用し、ルートディレクトリの `activate_venv.sh` スクリプトの仕様に従うこと。
