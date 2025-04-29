@@ -1,0 +1,5 @@
+fastapi
+uvicorn[standard]
+streamlit
+requests
+adk # Assuming 'adk' is the correct package name for the ADK framework
